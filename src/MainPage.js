@@ -1,14 +1,33 @@
 import Shelf from "./Shelf";
-import React from "react";
-import * as BooksAPI from "./BooksAPI";
-
-function getBooks() {
-  BooksAPI.getAll().then((res) => {
-    console.log(res);
-  });
-}
+import React, { useEffect, useState } from "react";
+import { getAll } from "./BooksAPI";
 
 const MainPage = () => {
+  const CATEGORIES = ["currentlyReading", "read", "wantToRead"];
+  const [currentlyReadBooks, setCurrentlyReadBooks] = useState([]);
+  const [readBooks, setReadBooks] = useState([]);
+  const [wantToReadBooks, setWantToReadBooks] = useState([]);
+
+  useEffect(() => {
+    async function fetchBooks() {
+      const response = await getAll();
+      console.log(response);
+      const currentlyReading = response.filter(
+        (item) => item.shelf === CATEGORIES[0]
+      );
+      setCurrentlyReadBooks(currentlyReading);
+      console.log(currentlyReadBooks);
+      const read = response.filter((item) => item.shelf === CATEGORIES[1]);
+      setReadBooks(read);
+      const wantToRead = response.filter(
+        (item) => item.shelf === CATEGORIES[2]
+      );
+      setWantToReadBooks(wantToRead);
+    }
+
+    fetchBooks();
+  }, []);
+
   return (
     <div className="list-books">
       <div className="list-books-title">
@@ -16,7 +35,10 @@ const MainPage = () => {
       </div>
       <div className="list-books-content">
         <div>
-          <Shelf title="Currently Reading" />
+          <Shelf title="Currently Reading" books={currentlyReadBooks} />
+          <Shelf title="Read" books={readBooks} />
+          <Shelf title="Want To Read" books={wantToReadBooks} />
+
           {/* <div className="bookshelf">
             <h2 className="bookshelf-title">Want to Read</h2>
             <div className="bookshelf-books">
