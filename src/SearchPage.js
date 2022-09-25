@@ -1,12 +1,21 @@
-import React from "react";
-const SearchPage = () => {
+import React, { useState } from "react";
+import { search } from "./BooksAPI";
+import terms from "./SearchTerms";
+import Shelf from "./Shelf";
+
+const SearchPage = ({ switchPage }) => {
+  const [searchResults, setSearchResults] = useState([]);
+
+  async function searchBook(query) {
+    const response = await search(query);
+    console.log(response);
+    setSearchResults(response);
+  }
+
   return (
     <div className="search-books">
       <div className="search-books-bar">
-        <button
-          className="close-search"
-          onClick={() => this.setState({ showSearchPage: false })}
-        >
+        <button className="close-search" onClick={() => switchPage()}>
           Close
         </button>
         <div className="search-books-input-wrapper">
@@ -18,11 +27,26 @@ const SearchPage = () => {
                   However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                   you don't find a specific author or title. Every search is limited by search terms.
                 */}
-          <input type="text" placeholder="Search by title or author" />
+          <input
+            type="text"
+            id="input"
+            placeholder="Search by title or author"
+          />
         </div>
+        <button
+          onClick={() => searchBook(document.getElementById("input").value)}
+        >
+          search
+        </button>
       </div>
       <div className="search-books-results">
-        <ol className="books-grid"></ol>
+        {/* <ol className="books-grid"></ol> */}
+        <Shelf
+          title="Results"
+          books={searchResults}
+          // shelfIndex={CATEGORIES.indexOf("currentlyReading")}
+          // moveBook={moveBook}
+        />
       </div>
     </div>
   );

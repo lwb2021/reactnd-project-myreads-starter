@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { getAll } from "./BooksAPI";
 import { trackPromise } from "react-promise-tracker";
 
-const MainPage = () => {
+const MainPage = ({ switchPage }) => {
   const CATEGORIES = ["currentlyReading", "read", "wantToRead"];
   const RESPONSE_KEY = "response";
   const [currentlyReadBooks, setCurrentlyReadBooks] = useState([]);
@@ -99,9 +99,7 @@ const MainPage = () => {
         </div>
       </div>
       <div className="open-search">
-        <button onClick={() => this.setState({ showSearchPage: true })}>
-          Add a book
-        </button>
+        <button onClick={() => switchPage()}>Add a book</button>
       </div>
     </div>
   );
