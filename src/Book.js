@@ -8,9 +8,9 @@ const Book = ({ book, shelfIndex, moveBook }) => {
     const prevCategory = book.shelf;
     const currCategory = event.currentTarget.value;
     if (currCategory !== prevCategory) {
-      moveBook(book, prevCategory, currCategory);
       // Change the book's shelf to the current shelf
       book.shelf = currCategory;
+      moveBook(book, prevCategory, currCategory);
     }
   }
 

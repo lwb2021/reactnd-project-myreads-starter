@@ -5,6 +5,7 @@ import { trackPromise } from "react-promise-tracker";
 
 const MainPage = () => {
   const CATEGORIES = ["currentlyReading", "read", "wantToRead"];
+  const RESPONSE_KEY = "response";
   const [currentlyReadBooks, setCurrentlyReadBooks] = useState([]);
   const [readBooks, setReadBooks] = useState([]);
   const [wantToReadBooks, setWantToReadBooks] = useState([]);
@@ -29,11 +30,18 @@ const MainPage = () => {
     } else if (currCategory === CATEGORIES[2]) {
       setWantToReadBooks(wantToReadBooks.concat(book));
     }
+
+    // Save the most updated shelves' information to the local storage
+    const booksInfo = Array.prototype.concat(
+      currentlyReadBooks,
+      readBooks,
+      wantToReadBooks
+    );
+    localStorage.setItem(RESPONSE_KEY, JSON.stringify(booksInfo));
   }
 
   useEffect(() => {
-    async function fetchBooks() {
-      const response = await getAll();
+    function displayBooks(response) {
       const currentlyReading = response.filter(
         (item) => item.shelf === CATEGORIES[0]
       );
@@ -45,7 +53,22 @@ const MainPage = () => {
       );
       setWantToReadBooks(wantToRead);
     }
-    trackPromise(fetchBooks());
+
+    async function fetchBooks() {
+      const response = await getAll();
+      localStorage.setItem(RESPONSE_KEY, JSON.stringify(response));
+      displayBooks(response);
+    }
+
+    // Retrieve the shelves' information from the local storage if it exists
+    if (window.localStorage.getItem(RESPONSE_KEY) !== null) {
+      const response = window.localStorage.getItem(RESPONSE_KEY);
+      if (response) {
+        displayBooks(JSON.parse(response));
+      }
+    } else {
+      trackPromise(fetchBooks());
+    }
   }, []);
 
   return (
