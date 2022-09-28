@@ -1,16 +1,47 @@
 import React, { useEffect } from "react";
 
-const Book = ({ book, shelfIndex, moveBook }) => {
+const Book = ({
+  book,
+  shelfIndex,
+  addBook,
+  moveBook,
+  RESPONSE_KEY_MAP,
+  setSearchResults,
+}) => {
   const WIDTH = 128;
   const HEIGHT = 193;
 
   function onSelect(event) {
-    const prevCategory = book.shelf;
+    // undefined means this book is from the search result
+    const prevCategory = book.shelf === undefined ? undefined : book.shelf;
     const currCategory = event.currentTarget.value;
+
     if (currCategory !== prevCategory) {
       // Change the book's shelf to the current shelf
       book.shelf = currCategory;
+
       moveBook(book, prevCategory, currCategory);
+
+      // Delete the downloaded book from the search result
+      if (!prevCategory) {
+        addBook(book);
+
+        // Update search result to local storage
+        const searchCache = localStorage.getItem(
+          RESPONSE_KEY_MAP.searchResponse
+        );
+
+        const updatedSearchCache = JSON.parse(searchCache).filter(
+          (item) => item.id !== book.id
+        );
+
+        setSearchResults(updatedSearchCache);
+
+        localStorage.setItem(
+          RESPONSE_KEY_MAP.searchResponse,
+          JSON.stringify(updatedSearchCache)
+        );
+      }
     }
   }
 

@@ -1,44 +1,21 @@
 import Shelf from "./Shelf";
-import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
 import { getAll } from "./BooksAPI";
 import { trackPromise } from "react-promise-tracker";
 
-const MainPage = ({ switchPage }) => {
-  const CATEGORIES = ["currentlyReading", "read", "wantToRead"];
-  const RESPONSE_KEY = "response";
-  const [currentlyReadBooks, setCurrentlyReadBooks] = useState([]);
-  const [readBooks, setReadBooks] = useState([]);
-  const [wantToReadBooks, setWantToReadBooks] = useState([]);
-
-  function moveBook(book, prevCategory, currCategory) {
-    // Remove the book from the previous shelf
-    if (prevCategory === CATEGORIES[0]) {
-      setCurrentlyReadBooks(
-        currentlyReadBooks.filter((item) => item.id !== book.id)
-      );
-    } else if (prevCategory === CATEGORIES[1]) {
-      setReadBooks(readBooks.filter((item) => item.id !== book.id));
-    } else if (prevCategory === CATEGORIES[2]) {
-      setWantToReadBooks(wantToReadBooks.filter((item) => item.id !== book.id));
-    }
-
-    // Move the book to the new shelf
-    if (currCategory === CATEGORIES[0]) {
-      setCurrentlyReadBooks(currentlyReadBooks.concat(book));
-    } else if (currCategory === CATEGORIES[1]) {
-      setReadBooks(readBooks.concat(book));
-    } else if (currCategory === CATEGORIES[2]) {
-      setWantToReadBooks(wantToReadBooks.concat(book));
-    }
-
-    // Save the most updated shelves' information to the local storage
-    const booksInfo = Array.prototype.concat(
-      currentlyReadBooks,
-      readBooks,
-      wantToReadBooks
-    );
-    localStorage.setItem(RESPONSE_KEY, JSON.stringify(booksInfo));
-  }
+const MainPage = ({
+  CATEGORIES,
+  RESPONSE_KEY_MAP,
+  moveBook,
+  currentlyReadBooks,
+  setCurrentlyReadBooks,
+  readBooks,
+  setReadBooks,
+  wantToReadBooks,
+  setWantToReadBooks,
+}) => {
+  const navigate = useNavigate();
 
   useEffect(() => {
     function displayBooks(response) {
@@ -55,14 +32,25 @@ const MainPage = ({ switchPage }) => {
     }
 
     async function fetchBooks() {
-      const response = await getAll();
-      localStorage.setItem(RESPONSE_KEY, JSON.stringify(response));
-      displayBooks(response);
+      try {
+        const response = await getAll();
+        localStorage.setItem(
+          RESPONSE_KEY_MAP.fetchResponse,
+          JSON.stringify(response)
+        );
+
+        // Add all book IDs to the set
+        const bookSet = new Set(response.map((book) => book.id));
+        localStorage.setItem("bookSet", [...bookSet]);
+        displayBooks(response);
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     // Retrieve the shelves' information from the local storage if it exists
-    if (window.localStorage.getItem(RESPONSE_KEY) !== null) {
-      const response = window.localStorage.getItem(RESPONSE_KEY);
+    if (localStorage.getItem(RESPONSE_KEY_MAP.fetchResponse)) {
+      const response = localStorage.getItem(RESPONSE_KEY_MAP.fetchResponse);
       if (response) {
         displayBooks(JSON.parse(response));
       }
@@ -99,7 +87,7 @@ const MainPage = ({ switchPage }) => {
         </div>
       </div>
       <div className="open-search">
-        <button onClick={() => switchPage()}>Add a book</button>
+        <button onClick={() => navigate("/search")}>Add a book</button>
       </div>
     </div>
   );
