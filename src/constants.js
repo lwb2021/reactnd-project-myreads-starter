@@ -5,3 +5,5 @@ export const RESPONSE_KEY_MAP = {
 };
 
 export const CATEGORIES = ["currentlyReading", "read", "wantToRead"];
+
+export const BOOKSET = "bookSet";

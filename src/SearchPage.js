@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { search } from "./BooksAPI";
 import Shelf from "./Shelf";
-// import debounce from "lodash";
+import debounce from "lodash";
 import { trackPromise } from "react-promise-tracker";
 import { SpinnerSearch } from "./Spinner";
 import { RESPONSE_KEY_MAP } from "./constants";
@@ -16,38 +16,38 @@ const SearchPage = ({ addBook, moveBook }) => {
   const SEARCH_ERR_MSG = "Please enter a valid search keyword!";
   const BLANK_MSG = "No result found.";
 
-  function debounce(fn, time, triggerNow) {
-    var t = null,
-      res;
-    var debounced = function() {
-      var _self = this,
-        args = arguments;
+  // function debounce(fn, time, triggerNow) {
+  //   var t = null,
+  //     res;
+  //   var debounced = function() {
+  //     var _self = this,
+  //       args = arguments;
 
-      if (t) {
-        clearTimeout(t);
-      }
+  //     if (t) {
+  //       clearTimeout(t);
+  //     }
 
-      if (triggerNow) {
-        var exec = !t;
+  //     if (triggerNow) {
+  //       var exec = !t;
 
-        t = setTimeout(function() {
-          t = null;
-        }, time);
+  //       t = setTimeout(function() {
+  //         t = null;
+  //       }, time);
 
-        if (exec) {
-          res = fn.apply(_self, args);
-          console.log(res);
-        }
-      } else {
-        t = setTimeout(function() {
-          res = fn.apply(_self, args).then((data) => data);
-        }, time);
-      }
+  //       if (exec) {
+  //         res = fn.apply(_self, args);
+  //         console.log(res);
+  //       }
+  //     } else {
+  //       t = setTimeout(function() {
+  //         res = fn.apply(_self, args).then((data) => data);
+  //       }, time);
+  //     }
 
-      return res;
-    };
-    return debounced;
-  }
+  //     return res;
+  //   };
+  //   return debounced;
+  // }
 
   async function searchBook(query) {
     const responseKey = RESPONSE_KEY_MAP.searchResponse;
@@ -58,7 +58,7 @@ const SearchPage = ({ addBook, moveBook }) => {
     } else {
       let searchResult = "";
       try {
-        // const debouncedSearch = debounce(search, 1000);
+        // const debouncedSearch = debounce((query) => search(query), 1000);
 
         // console.log(debounce);
         // const searchResult = debouncedSearch(query);

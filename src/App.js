@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import SearchPage from "./SearchPage";
 import MainPage from "./MainPage";
-import { RESPONSE_KEY_MAP, CATEGORIES } from "./constants";
+import { RESPONSE_KEY_MAP, CATEGORIES, BOOKSET } from "./constants";
 
 const BooksApp = () => {
   let [currentlyReadBooks, setCurrentlyReadBooks] = useState([]);
@@ -72,11 +72,11 @@ const BooksApp = () => {
   // Record all the downloaded books
   function addBook(book) {
     // initialize the search book result
-    if (!localStorage.getItem("bookSet"))
-      localStorage.setItem("bookSet", [...new Set()]);
-    const bookSet = new Set(localStorage.getItem("bookSet").split(","));
+    if (!localStorage.getItem(BOOKSET)) localStorage.setItem(BOOKSET, "");
+    const bookSet = new Set(localStorage.getItem(BOOKSET).split(","));
     bookSet.add(book.id);
-    localStorage.setItem("bookSet", [...bookSet]);
+    const bookSetArr = [...bookSet];
+    localStorage.setItem(BOOKSET, bookSetArr.join(","));
   }
 
   return (

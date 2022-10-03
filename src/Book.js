@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { RESPONSE_KEY_MAP, CATEGORIES } from "./constants";
+import { RESPONSE_KEY_MAP, CATEGORIES, BOOKSET } from "./constants";
 
-const Book = ({
-  book,
-  shelfIndex,
-  addBook,
-  moveBook,
-  setSearchResults,
-  onSearchPage,
-}) => {
+const Book = ({ book, shelfIndex, addBook, moveBook, onSearchPage }) => {
   const WIDTH = 128;
   const HEIGHT = 193;
   const DELETE = "delete";
   const NONE_OPTION_INDEX = 4;
   const CHECKMARK_ID = `checkmark_${book.id}`;
   const [optionStatus, setOptionStatus] = useState(false);
+
+  // Set a book's visibility
+  function markBookVisibility(checkID, visible = true) {
+    const checkmark = document.getElementById(checkID);
+    checkmark.style.visibility = visible ? "visible" : "hidden";
+  }
+
+  function setLocalStorage(key, value) {
+    localStorage.setItem(key, value);
+  }
 
   function onSelect(event) {
     // undefined means this book is from the search result
@@ -23,17 +26,15 @@ const Book = ({
     moveBook(book, prevCategory, currCategory);
 
     if (currCategory === DELETE) {
-      /*
-        delete the book
-      */
+      // delete the book
       const answer = window.confirm("Do you want to delete it?");
       if (answer) {
         // Remove the book from the bookSet
-        const bookSet = localStorage
-          .getItem("bookSet")
+        const bookSetArr = localStorage
+          .getItem(BOOKSET)
           .split(",")
-          .filter((item) => item.id !== book.id);
-        localStorage.setItem("bookSet", JSON.stringify([...bookSet]));
+          .filter((item) => item !== book.id);
+        setLocalStorage(BOOKSET, bookSetArr.join(","));
 
         // Remove the book from the downloaded cache
         const downloadedCache = new Map(
@@ -46,20 +47,19 @@ const Book = ({
           }
         }
 
-        localStorage.setItem(
+        setLocalStorage(
           RESPONSE_KEY_MAP.downloadedResponse,
           JSON.stringify(Array.from(downloadedCache.entries()))
         );
 
         // Mark the book as unchecked
-        const checkmark = document.getElementById(CHECKMARK_ID);
-        checkmark.style.visibility = "hidden";
+        markBookVisibility(CHECKMARK_ID, false);
       }
     } else if (currCategory !== prevCategory) {
       // initialize the cache for downloaded books
       let downloadedCache = new Map();
       if (!localStorage.getItem(RESPONSE_KEY_MAP.downloadedResponse))
-        localStorage.setItem(
+        setLocalStorage(
           RESPONSE_KEY_MAP.downloadedResponse,
           JSON.stringify(Array.from(downloadedCache.entries()))
         );
@@ -71,7 +71,7 @@ const Book = ({
 
       downloadedCache.set(book.id, currCategory);
 
-      localStorage.setItem(
+      setLocalStorage(
         RESPONSE_KEY_MAP.downloadedResponse,
         JSON.stringify(Array.from(downloadedCache.entries()))
       );
@@ -81,10 +81,14 @@ const Book = ({
         addBook(book);
 
         // Mark the book as checked
-        const checkmark = document.getElementById(CHECKMARK_ID);
-        checkmark.style.visibility = "visible";
+        markBookVisibility(CHECKMARK_ID, true);
       }
     }
+    // Change the dropdown menu's status
+    changeDropdownStatus(book, currCategory);
+  }
+
+  function changeDropdownStatus(book, currCategory) {
     // Change the book's dropdown menu
     const elem = document.getElementById(book.id);
     // Plus 1 since the index 0 of the dropdown is a disabled option
