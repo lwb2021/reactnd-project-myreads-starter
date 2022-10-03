@@ -8,8 +8,8 @@ const Shelf = ({
   shelfIndex,
   addBook,
   moveBook,
-  RESPONSE_KEY_MAP,
   setSearchResults,
+  onSearchPage,
 }) => {
   return (
     <div className="bookshelf">
@@ -23,8 +23,8 @@ const Shelf = ({
                 shelfIndex={shelfIndex}
                 addBook={addBook}
                 moveBook={moveBook}
-                RESPONSE_KEY_MAP={RESPONSE_KEY_MAP}
                 setSearchResults={setSearchResults}
+                onSearchPage={onSearchPage}
               />
             </li>
           ))}

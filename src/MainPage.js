@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import React, { useEffect } from "react";
 import { getAll } from "./BooksAPI";
 import { trackPromise } from "react-promise-tracker";
+import { RESPONSE_KEY_MAP, CATEGORIES } from "./constants";
+// import PropTypes from "prop-types";
 
 const MainPage = ({
-  CATEGORIES,
-  RESPONSE_KEY_MAP,
+  addBook,
   moveBook,
   currentlyReadBooks,
   setCurrentlyReadBooks,
@@ -40,8 +41,7 @@ const MainPage = ({
         );
 
         // Add all book IDs to the set
-        const bookSet = new Set(response.map((book) => book.id));
-        localStorage.setItem("bookSet", [...bookSet]);
+        response.map((book) => addBook(book));
         displayBooks(response);
       } catch (err) {
         console.log(err);
@@ -92,5 +92,16 @@ const MainPage = ({
     </div>
   );
 };
+
+// MainPage.propTypes = {
+//   addBook: PropTypes.string,
+//   moveBook: PropTypes.func,
+//   currentlyReadBooks: PropTypes.string,
+//   setCurrentlyReadBooks: PropTypes.func,
+//   readBooks: PropTypes.string,
+//   setReadBooks: PropTypes.func,
+//   wantToReadBooks: PropTypes.string,
+//   setWantToReadBooks: PropTypes.func,
+// };
 
 export default MainPage;

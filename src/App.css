@@ -159,7 +159,8 @@ button:active {
   position: relative;
   height: 200px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
 }
 
 .book-shelf-changer {
@@ -195,4 +196,12 @@ button:active {
   padding: 20px 10px 0;
   text-align: center;
   font-size: 0.8em;
+}
+
+.checkmark {
+  width: 80%;
+  height: 70%;
+  position: absolute;
+  mix-blend-mode: multiply;
+  visibility: hidden; 
 }

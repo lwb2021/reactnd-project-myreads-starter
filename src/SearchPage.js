@@ -2,61 +2,110 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { search } from "./BooksAPI";
 import Shelf from "./Shelf";
+// import debounce from "lodash";
 import { trackPromise } from "react-promise-tracker";
 import { SpinnerSearch } from "./Spinner";
+import { RESPONSE_KEY_MAP } from "./constants";
 
-const SearchPage = ({ RESPONSE_KEY_MAP, addBook, moveBook }) => {
+const SearchPage = ({ addBook, moveBook }) => {
   const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState([]);
   const [blankMsg, setBlankMsg] = useState("");
   const [prevSearchName, setPrevSearchName] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const SEARCH_ERR_MSG = "Please enter a valid search keyword!";
+  const BLANK_MSG = "No result found.";
+
+  function debounce(fn, time, triggerNow) {
+    var t = null,
+      res;
+    var debounced = function() {
+      var _self = this,
+        args = arguments;
+
+      if (t) {
+        clearTimeout(t);
+      }
+
+      if (triggerNow) {
+        var exec = !t;
+
+        t = setTimeout(function() {
+          t = null;
+        }, time);
+
+        if (exec) {
+          res = fn.apply(_self, args);
+          console.log(res);
+        }
+      } else {
+        t = setTimeout(function() {
+          res = fn.apply(_self, args).then((data) => data);
+        }, time);
+      }
+
+      return res;
+    };
+    return debounced;
+  }
 
   async function searchBook(query) {
     const responseKey = RESPONSE_KEY_MAP.searchResponse;
     const searchResultCache = localStorage.getItem(responseKey);
-
     // Retrieve from cache if the search result exists
     if (searchResultCache && query === prevSearchName) {
       setSearchResults(JSON.parse(searchResultCache));
     } else {
+      let searchResult = "";
       try {
-        const searchResult = await search(query);
-        if (!localStorage.getItem("bookSet"))
-          localStorage.setItem("bookSet", [...new Set()]);
+        // const debouncedSearch = debounce(search, 1000);
 
-        const bookSet = new Set(localStorage.getItem("bookSet").split(","));
+        // console.log(debounce);
+        // const searchResult = debouncedSearch(query);
+        // console.log(searchResult);
+        setBlankMsg("");
+        searchResult = await search(query);
 
-        const filteredResult = searchResult.filter(
-          (book) => !bookSet.has(book.id)
-        );
+        if (searchResult.error) {
+          setSearchResults([]);
+          setBlankMsg(BLANK_MSG);
+          return;
+        }
 
         // Display the search result to UI
-        setSearchResults(filteredResult);
+        setSearchResults(searchResult);
 
         // Add search result to local storage
-        localStorage.setItem(responseKey, JSON.stringify(filteredResult));
+        localStorage.setItem(responseKey, JSON.stringify(searchResult));
       } catch (err) {
         console.log(err);
         setSearchResults([]);
-        setBlankMsg("Please try a different search keyword.");
+        setBlankMsg(BLANK_MSG);
       }
     }
   }
 
+  // Return the title for the search result
   function getTitle(name) {
-    return `Results of "${name}"`;
+    return name ? `Results of "${name}"` : "";
   }
 
-  function handleClick(searchName) {
-    setPrevSearchName(getTitle(searchName));
-    trackPromise(searchBook(searchName));
+  // Get the search name from the input
+  function getSearchName() {
+    return document.getElementById("input").value;
   }
 
-  // Handle Enter key press
-  function handleKeyDown(event) {
-    if (event.key === "Enter") {
-      const searchName = document.getElementById("input").value;
-      setPrevSearchName(getTitle(searchName));
+  // Handle search
+  function handleSearch(event) {
+    if (event.key === "Enter" || event.type === "click") {
+      // Handle empty search keyword
+      if (!searchKeyword) {
+        alert(SEARCH_ERR_MSG);
+        return;
+      }
+
+      const searchName = getSearchName();
+      setPrevSearchName(searchName);
       trackPromise(searchBook(searchName));
     }
   }
@@ -85,29 +134,28 @@ const SearchPage = ({ RESPONSE_KEY_MAP, addBook, moveBook }) => {
             type="text"
             id="input"
             placeholder="Search by title or author"
-            onKeyDown={handleKeyDown}
+            onKeyDown={handleSearch}
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            maxLength="20"
           />
         </div>
-        <button
-          onClick={() => handleClick(document.getElementById("input").value)}
-        >
-          search
-        </button>
+        <button onClick={handleSearch}>search</button>
       </div>
       <div className="search-books-results">
         {searchResults.length === 0 ? (
           <div className="bookshelf">
-            <h2 className="bookshelf-title">{prevSearchName}</h2>
+            <h2 className="bookshelf-title">{getTitle(prevSearchName)}</h2>
             <h3>{blankMsg}</h3>
           </div>
         ) : (
           <Shelf
-            title={prevSearchName}
+            title={getTitle(prevSearchName)}
             books={searchResults}
             addBook={addBook}
             moveBook={moveBook}
-            RESPONSE_KEY_MAP={RESPONSE_KEY_MAP}
             setSearchResults={setSearchResults}
+            onSearchPage={true}
           />
         )}
         <SpinnerSearch />

@@ -3,22 +3,17 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import SearchPage from "./SearchPage";
 import MainPage from "./MainPage";
+import { RESPONSE_KEY_MAP, CATEGORIES } from "./constants";
 
 const BooksApp = () => {
-  const CATEGORIES = ["currentlyReading", "read", "wantToRead"];
   let [currentlyReadBooks, setCurrentlyReadBooks] = useState([]);
   let [readBooks, setReadBooks] = useState([]);
   let [wantToReadBooks, setWantToReadBooks] = useState([]);
-  const RESPONSE_KEY_MAP = {
-    fetchResponse: "fetchResponse",
-    searchResponse: "searchResponse",
-  };
+
   // Pass the props to child components in bulk
   const multipleProps = {
     moveBook,
     addBook,
-    CATEGORIES,
-    RESPONSE_KEY_MAP,
     currentlyReadBooks,
     setCurrentlyReadBooks,
     readBooks,
@@ -32,20 +27,23 @@ const BooksApp = () => {
     - Remove the book from the old shelf
     - prevCategory is undefined when it is from the search result
      */
-    if (prevCategory && prevCategory === CATEGORIES[0]) {
+
+    book.shelf = currCategory;
+
+    if (prevCategory === CATEGORIES[0]) {
       currentlyReadBooks = currentlyReadBooks.filter(
         (item) => item.id !== book.id
       );
       setCurrentlyReadBooks(currentlyReadBooks);
-    } else if (prevCategory && prevCategory === CATEGORIES[1]) {
+    } else if (prevCategory === CATEGORIES[1]) {
       readBooks = readBooks.filter((item) => item.id !== book.id);
       setReadBooks(readBooks);
-    } else if (prevCategory && prevCategory === CATEGORIES[2]) {
+    } else if (prevCategory === CATEGORIES[2]) {
       wantToReadBooks = wantToReadBooks.filter((item) => item.id !== book.id);
       setWantToReadBooks(wantToReadBooks);
     }
 
-    // Move the book to the new shelf
+    // Move the book to the new shelf or delete it
     if (currCategory === CATEGORIES[0]) {
       currentlyReadBooks.push(book);
       setCurrentlyReadBooks(currentlyReadBooks);
@@ -55,6 +53,9 @@ const BooksApp = () => {
     } else if (currCategory === CATEGORIES[2]) {
       wantToReadBooks.push(book);
       setWantToReadBooks(wantToReadBooks);
+    } else {
+      // delete the book and reset its category
+      book.shelf = undefined;
     }
 
     // Save the most updated shelves' information to the local storage
@@ -70,6 +71,9 @@ const BooksApp = () => {
 
   // Record all the downloaded books
   function addBook(book) {
+    // initialize the search book result
+    if (!localStorage.getItem("bookSet"))
+      localStorage.setItem("bookSet", [...new Set()]);
     const bookSet = new Set(localStorage.getItem("bookSet").split(","));
     bookSet.add(book.id);
     localStorage.setItem("bookSet", [...bookSet]);
