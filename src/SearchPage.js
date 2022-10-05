@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { search } from "./BooksAPI";
 import Shelf from "./Shelf";
-// import debounce from "lodash";
+import debounce from "lodash";
 import { trackPromise } from "react-promise-tracker";
 import { SpinnerSearch } from "./Spinner";
 import { RESPONSE_KEY_MAP } from "./constants";
